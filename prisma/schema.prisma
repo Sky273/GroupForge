@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  editor
+  viewer
+}
+
+enum PersonStatus {
+  active
+  inactive
+  archived
+}
+
+enum EventStatus {
+  draft
+  planned
+  ongoing
+  completed
+  archived
+}
+
+enum GroupStatus {
+  draft
+  active
+  archived
+}
+
+enum SlotType {
+  person
+  group
+  mixed
+}
+
+enum AssignmentType {
+  person
+  group
+}
+
+enum AssetKind {
+  avatar
+  background
+  attachment
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  image     String?
+  role      UserRole @default(editor)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Person {
+  id            String       @id @default(cuid())
+  firstName     String
+  lastName      String
+  fullName      String
+  email         String?
+  phone         String?
+  accentColor   String?
+  notes         String?
+  status        PersonStatus @default(active)
+  avatarAssetId String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  lastActivityAt DateTime?
+
+  tags         PersonTag[]
+  assignments  SlotAssignment[]
+
+  @@index([fullName])
+}
+
+model PersonTag {
+  id       String @id @default(cuid())
+  personId String
+  label    String
+  color    String?
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  subtitle    String?
+  description String?
+  eventDate   DateTime
+  startTime   String?
+  endTime     String?
+  timezone    String?
+  location    String?
+  status      EventStatus @default(draft)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  tags   EventTag[]
+  groups Group[]
+
+  @@index([eventDate])
+}
+
+model EventTag {
+  id      String @id @default(cuid())
+  eventId String
+  label   String
+  color   String?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model GroupTemplate {
+  id               String         @id @default(cuid())
+  title            String
+  subtitle         String?
+  description      String?
+  backgroundAssetId String?
+  canvasWidth      Int
+  canvasHeight     Int
+  theme            String?
+  versionNumber    Int            @default(1)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  slots  TemplateSlot[]
+  groups Group[]
+}
+
+model TemplateSlot {
+  id               String   @id @default(cuid())
+  templateId       String
+  title            String
+  subtitle         String?
+  x                Float
+  y                Float
+  width            Float?
+  height           Float?
+  capacity         Int?
+  slotType         SlotType
+  shape            String?
+  rotation         Float?
+  zIndex           Int?
+  allowNestedGroup Boolean  @default(false)
+  rulesJson        Json?
+  locked           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  template GroupTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  groupSlots GroupSlot[]
+
+  @@index([templateId])
+}
+
+model Group {
+  id                  String      @id @default(cuid())
+  eventId             String
+  templateId          String?
+  parentGroupId       String?
+  title               String
+  subtitle            String?
+  description         String?
+  backgroundAssetId   String?
+  canvasWidth         Int
+  canvasHeight        Int
+  status              GroupStatus @default(draft)
+  isDetachedFromTemplate Boolean  @default(false)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  event          Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  template       GroupTemplate?   @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  parentGroup    Group?           @relation("NestedGroups", fields: [parentGroupId], references: [id], onDelete: SetNull)
+  childGroups    Group[]          @relation("NestedGroups")
+  slots          GroupSlot[]
+  childAssignments SlotAssignment[] @relation("AssignedChildGroup")
+
+  @@index([eventId])
+  @@index([parentGroupId])
+}
+
+model GroupSlot {
+  id               String   @id @default(cuid())
+  groupId          String
+  templateSlotId   String?
+  title            String
+  subtitle         String?
+  x                Float
+  y                Float
+  width            Float?
+  height           Float?
+  capacity         Int?
+  slotType         SlotType
+  shape            String?
+  rotation         Float?
+  zIndex           Int?
+  allowNestedGroup Boolean  @default(false)
+  rulesJson        Json?
+  locked           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  group       Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  templateSlot TemplateSlot? @relation(fields: [templateSlotId], references: [id], onDelete: SetNull)
+  assignments SlotAssignment[]
+
+  @@index([groupId])
+}
+
+model SlotAssignment {
+  id            String         @id @default(cuid())
+  groupSlotId    String
+  assignmentType AssignmentType
+  personId       String?
+  childGroupId   String?
+  note           String?
+  assignedAt     DateTime       @default(now())
+
+  groupSlot  GroupSlot @relation(fields: [groupSlotId], references: [id], onDelete: Cascade)
+  person     Person?   @relation(fields: [personId], references: [id], onDelete: SetNull)
+  childGroup Group?    @relation("AssignedChildGroup", fields: [childGroupId], references: [id], onDelete: SetNull)
+
+  @@unique([groupSlotId])
+  @@index([personId])
+  @@index([childGroupId])
+}
+
+model Asset {
+  id         String    @id @default(cuid())
+  kind       AssetKind
+  storageKey String
+  fileName   String
+  mimeType   String
+  sizeBytes  Int
+  width      Int?
+  height     Int?
+  createdAt  DateTime  @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorUserId String?
+  entityType String
+  entityId   String
+  action     String
+  payloadJson Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
