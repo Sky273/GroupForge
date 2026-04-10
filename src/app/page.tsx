@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Layers3, UsersRound, WandSparkles } from "lucide-react";
 

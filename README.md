@@ -24,7 +24,23 @@ Cette première itération pose le socle du produit :
 ## Lancer le projet
 ```bash
 npm install
+cp .env.example .env.local
+npx prisma generate
 npm run dev
+```
+
+## Base de données locale
+GroupForge repasse sur **PostgreSQL**.
+
+Exemple de connexion locale :
+```env
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/groupforge?schema=public"
+```
+
+Quand ta base PostgreSQL est prête :
+```bash
+npm run db:push
+npm run db:seed
 ```
 
 ## Variables d'environnement

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { createPersonAction } from "@/actions/people";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppTopbar } from "@/components/app-topbar";
