@@ -45,3 +45,25 @@ export async function createTemplate(input: CreateTemplateInput) {
     },
   });
 }
+
+export async function addTemplateSlot(input: {
+  templateId: string;
+  title: string;
+  subtitle?: string;
+  x: number;
+  y: number;
+  slotType: "person" | "group" | "mixed";
+  capacity?: number;
+}) {
+  return prisma.templateSlot.create({
+    data: {
+      templateId: input.templateId,
+      title: input.title,
+      subtitle: input.subtitle || null,
+      x: input.x,
+      y: input.y,
+      slotType: input.slotType,
+      capacity: input.capacity ?? 1,
+    },
+  });
+}

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { instantiateTemplateToEventAction } from "@/actions/groups";
@@ -49,6 +50,11 @@ export default async function EventDetailPage({ params }: { params: { id: string
                         <Pill>
                           {group.slots.reduce((sum, slot) => sum + slot.assignments.length, 0)} affectations
                         </Pill>
+                      </div>
+                      <div className="mt-5">
+                        <Link href={`/groups/${group.id}`} className="text-sm font-medium text-[var(--accent)] transition hover:opacity-80">
+                          Ouvrir le groupe
+                        </Link>
                       </div>
                     </article>
                   ))}

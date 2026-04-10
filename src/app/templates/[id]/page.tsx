@@ -2,9 +2,11 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 
+import { addTemplateSlotAction } from "@/actions/template-slots";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppTopbar } from "@/components/app-topbar";
 import { EmptyState } from "@/components/empty-state";
+import { SubmitButton, TextField } from "@/components/forms";
 import { Pill, SectionTitle, SurfaceCard } from "@/components/ui-shell";
 import { getTemplateById } from "@/services/template-service";
 
@@ -22,7 +24,7 @@ export default async function TemplateDetailPage({ params }: { params: { id: str
       <div className="flex min-w-0 flex-1 flex-col gap-6">
         <AppTopbar title={template.title} subtitle={template.subtitle || "Modèle sans sous-titre"} />
 
-        <section className="grid gap-6 xl:grid-cols-[1fr_360px]">
+        <section className="grid gap-6 xl:grid-cols-[1fr_380px]">
           <SurfaceCard>
             <SectionTitle kicker="Slots" title="Structure du modèle" description="Les slots persistés ici servent ensuite à générer les groupes d'événement." />
             <div className="mt-6">
@@ -56,6 +58,31 @@ export default async function TemplateDetailPage({ params }: { params: { id: str
               <div><strong className="text-[var(--foreground)]">Slots :</strong> {template.slots.length}</div>
               <div><strong className="text-[var(--foreground)]">Version :</strong> {template.versionNumber}</div>
               <div><strong className="text-[var(--foreground)]">Description :</strong> {template.description || "Aucune description"}</div>
+            </div>
+
+            <div className="mt-8 border-t border-[var(--border)] pt-6">
+              <SectionTitle kicker="Ajouter" title="Nouveau slot" description="Premier niveau d'édition persistée du modèle." />
+              <form action={addTemplateSlotAction} className="mt-6 grid gap-4">
+                <input type="hidden" name="templateId" value={template.id} />
+                <TextField label="Titre" name="title" required />
+                <TextField label="Sous-titre" name="subtitle" />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <TextField label="Position X (%)" name="x" type="number" defaultValue={50} required />
+                  <TextField label="Position Y (%)" name="y" type="number" defaultValue={50} required />
+                </div>
+                <label className="grid gap-2 text-sm text-[var(--foreground)]">
+                  <span className="font-medium">Type de slot</span>
+                  <select name="slotType" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition focus:border-[var(--accent)]">
+                    <option value="person">Personne</option>
+                    <option value="group">Groupe</option>
+                    <option value="mixed">Mixte</option>
+                  </select>
+                </label>
+                <TextField label="Capacité" name="capacity" type="number" defaultValue={1} required />
+                <div className="pt-2">
+                  <SubmitButton>Ajouter le slot</SubmitButton>
+                </div>
+              </form>
             </div>
           </SurfaceCard>
         </section>

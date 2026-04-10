@@ -58,7 +58,9 @@ export async function getGroupById(id: string) {
     where: { id },
     include: {
       event: true,
+      template: true,
       slots: {
+        orderBy: [{ y: "asc" }, { x: "asc" }],
         include: {
           assignments: {
             include: {
