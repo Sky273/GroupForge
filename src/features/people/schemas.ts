@@ -8,4 +8,9 @@ export const createPersonSchema = z.object({
   notes: z.string().max(1200).optional().or(z.literal("")),
 });
 
+export const updatePersonSchema = createPersonSchema.partial().extend({
+  status: z.enum(["active", "inactive", "archived"]).optional(),
+});
+
 export type CreatePersonInput = z.infer<typeof createPersonSchema>;
+export type UpdatePersonInput = z.infer<typeof updatePersonSchema>;

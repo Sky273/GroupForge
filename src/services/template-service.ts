@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { CreateTemplateInput, TemplateSlotInput } from "@/features/templates/schemas";
+import type { CreateTemplateInput, TemplateSlotInput, UpdateTemplateInput } from "@/features/templates/schemas";
 
 export async function listTemplates() {
   return prisma.groupTemplate.findMany({
@@ -17,6 +17,22 @@ export async function getTemplateById(id: string) {
       slots: {
         orderBy: [{ createdAt: "asc" }],
       },
+    },
+  });
+}
+
+export async function updateTemplate(id: string, input: UpdateTemplateInput) {
+  return prisma.groupTemplate.update({
+    where: { id },
+    data: {
+      title: input.title,
+      subtitle: input.subtitle === "" ? null : input.subtitle,
+      description: input.description === "" ? null : input.description,
+      canvasWidth: input.canvasWidth,
+      canvasHeight: input.canvasHeight,
+    },
+    include: {
+      slots: true,
     },
   });
 }

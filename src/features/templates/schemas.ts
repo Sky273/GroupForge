@@ -21,5 +21,8 @@ export const createTemplateSchema = z.object({
   slots: z.array(templateSlotSchema).default([]),
 });
 
+export const updateTemplateSchema = createTemplateSchema.partial();
+
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;
+export type UpdateTemplateInput = z.infer<typeof updateTemplateSchema>;
 export type TemplateSlotInput = z.infer<typeof templateSlotSchema>;

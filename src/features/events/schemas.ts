@@ -10,4 +10,10 @@ export const createEventSchema = z.object({
   location: z.string().max(160).optional().or(z.literal("")),
 });
 
+export const updateEventSchema = createEventSchema.partial().extend({
+  status: z.enum(["draft", "planned", "ongoing", "completed", "archived"]).optional(),
+  timezone: z.string().max(80).optional().or(z.literal("")),
+});
+
 export type CreateEventInput = z.infer<typeof createEventSchema>;
+export type UpdateEventInput = z.infer<typeof updateEventSchema>;
